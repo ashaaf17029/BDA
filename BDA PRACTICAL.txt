@@ -1,0 +1,776 @@
+1 .SQOOP
+
+
+
+# STEP 1: START HADOOP SERVICES
+sudo service hadoop-hdfs-namenode start
+sudo service hadoop-hdfs-datanode start
+sudo service hadoop-yarn-resourcemanager start
+sudo service hadoop-yarn-nodemanager start
+sudo service hadoop-mapreduce-historyserver start
+
+
+# STEP 2: START MYSQL AND SETUP DATABASE
+sudo service mysqld start
+mysql -u root -pcloudera
+
+
+CREATE DATABASE sakec;
+USE sakec;
+CREATE TABLE stud(id INT, name VARCHAR(20), marks INT);
+INSERT INTO stud VALUES (1,"Abhinav",23);
+INSERT INTO stud VALUES (2,"Aditya",24);
+INSERT INTO stud VALUES (3,"Ayush",25);
+SELECT * FROM stud;
+EXIT;
+
+
+sqoop version
+
+
+# STEP 3: SQOOP IMPORT (MYSQL ➜ HDFS)
+sqoop import \
+--connect jdbc:mysql://localhost/sakec \
+--username root \
+--password cloudera \
+--table stud \
+--m 1 \
+--target-dir /user/cloudera/student_import
+
+
+# STEP 5: VERIFY IMPORTED DATA IN HDFS
+hadoop fs -ls /user/cloudera/student_import
+hadoop fs -cat /user/cloudera/student_import/part-m-00000
+
+
+
+2.HIVE:
+
+# STEP 1: START HADOOP SERVICES
+sudo service hadoop-hdfs-namenode start
+sudo service hadoop-hdfs-datanode start
+sudo service hadoop-yarn-resourcemanager start
+sudo service hadoop-yarn-nodemanager start
+sudo service hadoop-mapreduce-historyserver start
+
+
+# STEP 2: START HIVE
+hive
+
+
+CREATE DATABASE company;
+USE company;
+CREATE TABLE employee(id INT, name STRING, sal INT);
+
+
+INSERT INTO employee VALUES (1,"RAM",1200);
+INSERT INTO employee VALUES (2,"aman",1300);
+INSERT INTO employee VALUES (3,"ajay",1500);
+
+
+SELECT * FROM employee;
+SELECT COUNT(*) AS Total_Empl FROM employee;
+SELECT * FROM employee WHERE sal < 1500;
+SELECT AVG(sal) AS avg_sal FROM employee;
+
+
+
+
+3.PIG:
+
+# Step 1: Start Cloudera services
+sudo service hbase-master start
+sudo service hbase-regionserver start
+
+
+# Step 2: Create directory for Pig data
+mkdir /home/cloudera/pigdata
+cd /home/cloudera/pigdata
+
+
+# Step 3: Create the sample input file
+echo "1,Hardik,29" > sample.txt
+echo "2,Shahid,24" >> sample.txt
+echo "3,Ashraf,22" >> sample.txt
+
+
+# Verify the file
+cat sample.txt
+
+
+# Step 4: Copy file to HDFS
+hdfs dfs -mkdir /user/cloudera/pigdata
+hdfs dfs -put /home/cloudera/pigdata/sample.txt /user/cloudera/pigdata/
+
+
+# Verify upload
+hdfs dfs -ls /user/cloudera/pigdata
+
+
+# Step 5: Create a Pig script file
+nano sample.pig
+
+
+student = LOAD '/user/cloudera/pigdata/sample.txt' USING PigStorage(',') AS (id:int, name:chararray, rollno:int);
+ DUMP student;
+# Then save using Ctrl + X, Y, and Enter.
+
+
+# Step 6: Run the Pig script
+pig -x mapreduce /home/cloudera/pigdata/sample.pig
+# Or
+pig -x mapreduce sample.pig
+
+
+# Step 8: Verify HDFS output (optional)
+hdfs dfs -cat /user/cloudera/pigdata/sample.txt
+
+
+
+
+3.HDFS:
+# ============================
+# HDFS COMPLETE PRACTICAL SCRIPT
+# ============================
+
+
+
+# 1️⃣ Start Only Required Services
+sudo service hadoop-hdfs-namenode start
+sudo service hadoop-hdfs-datanode start
+
+
+# 2️⃣ Create Directory in HDFS
+hdfs dfs -mkdir -p /user/cloudera/demo
+
+
+# 3️⃣ Create Empty File in HDFS(not required)
+hdfs dfs -touchz /user/cloudera/demo/sample.txt
+
+
+# 4️⃣ Create File in Local System
+echo "Hello Hadoop" > sample1.txt
+
+
+# 5️⃣ Upload Local File to HDFS (Using put)
+hdfs dfs -put -f sample1.txt /user/cloudera/demo/
+
+
+# 6️⃣ View HDFS Directory and Files
+hdfs dfs -ls /user/cloudera/demo/
+
+
+# 7️⃣ View File Content in HDFS
+hdfs dfs -cat /user/cloudera/demo/sample1.txt
+
+
+# 8️⃣ Copy File within HDFS(not required)
+hdfs dfs -cp /user/cloudera/demo/sample1.txt /user/cloudera/demo/sample_copy.txt
+
+
+# 9️⃣ Move File within HDFS(not required)
+hdfs dfs -mv /user/cloudera/demo/sample_copy.txt /user/cloudera/demo/moved_sample.txt
+
+# 🔟 Copy File from HDFS to Local (Using get)
+hdfs dfs -get /user/cloudera/demo/sample1.txt /home/cloudera/Desktop/
+
+
+# 11️⃣ Check Disk Usage and HDFS Space
+hdfs dfs -du /user/cloudera/demo/
+hdfs dfs -df
+
+
+# 12️⃣ Verify All Files in Demo Folder
+hdfs dfs -ls /user/cloudera/demo/
+
+# 13️⃣ (Optional) Delete File or Directory
+# hdfs dfs -rm /user/cloudera/demo/sample1.txt
+# hdfs dfs -rm -r /user/cloudera/demo/
+
+
+# 14️⃣ (Optional) Empty Trash Permanently
+# hdfs dfs -expunge
+
+
+# ============================
+# END OF PRACTICAL SCRIPT
+# ============================
+
+
+
+MongoDB Commands:
+
+
+// Step 1: Start Mongo Shell
+mongosh
+
+
+// Step 2: Show all databases
+show dbs
+
+
+// Step 3: Use or create database
+use learn
+
+
+// Step 4: Show databases again
+show dbs
+
+
+// Step 5: Create collection
+db.createCollection("emp")
+
+
+// Step 6: Insert one document
+db.emp.insertOne({empid:1, name:"Abhinav", salary:100000})
+
+
+// Step 7: Insert multiple documents
+db.emp.insertMany([
+  {empid:2, name:"Hardik", salary:200000},
+  {empid:3, name:"Ashaaf", salary:300000}
+])
+
+
+// Step 8: Display all documents
+db.emp.find()
+
+
+// Step 9: Find document by name
+db.emp.find({name:"Ashaaf"})
+
+
+// Step 10: Find document by empid
+db.emp.find({empid:2})
+
+
+// Step 11: Update one document
+db.emp.updateOne(
+  {name:"Hardik"},
+  {$set:{salary:750000, empid:4}}
+)
+
+
+// Step 12: Verify update
+db.emp.find({empid:4})
+
+
+// Step 13: Update another document
+db.emp.updateOne(
+  {name:"Abhinav"},
+  {$set:{salary:750000}}
+)
+
+
+// Step 14: Update multiple documents
+db.emp.updateMany(
+  {salary:750000},
+  {$set:{salary:700000}}
+)
+
+
+// Step 15: Display updated documents
+db.emp.find()
+
+
+// Step 16: Delete one document
+db.emp.deleteOne({name:"Ashaaf"})
+
+
+// Step 17: Verify deletion
+db.emp.find()
+
+
+// Step 18: Drop collection
+db.emp.drop()
+
+
+// Step 19: Drop database
+db.dropDatabase()
+
+
+
+
+Code1.Map Reduce:
+#Aim: Count how many times each word appears in input.txt
+
+count = {}  # store word-frequency pairs
+
+f = open("input.txt", "r")  # open file in read mode
+text = f.read()  # read file content
+
+words = text.lower().split()  # convert to lowercase & split into words
+
+for word in words:
+    word = word.strip(".,")  # remove commas and periods
+    if word in count:
+        count[word] += 1  # increase count if word exists
+    else:
+        count[word] = 1  # add new word with count 1
+
+for word, freq in count.items():
+    print(word, ":", freq)  # print word and its count
+
+f.close()  # close file
+
+
+
+DHRUV(MP):
+
+# 🧠 Aim:
+# To count how many times each word appears in the given text input
+# using a simple MapReduce simulation in Python.
+
+from collections import defaultdict
+
+# --- Map Step ---
+# Splits each line into words and maps them as (word, 1)
+def map_step(lines):
+    mapped = []
+    for line in lines:
+        for word in line.strip().split():
+            mapped.append((word.lower(), 1))
+    return mapped
+
+
+# --- Shuffle Step ---
+# Groups all values (1s) by word
+def shuffle_step(mapped_data):
+    shuffled = defaultdict(list)
+    for key, value in mapped_data:
+        shuffled[key].append(value)
+    return shuffled
+
+
+# --- Reduce Step ---
+# Sums up the counts for each word
+def reduce_step(shuffled_data):
+    reduced = {}
+    for key, values in shuffled_data.items():
+        reduced[key] = sum(values)
+    return reduced
+
+
+# --- Main Program ---
+if __name__ == "__main__":
+    print("Enter text lines (type 'DONE' to finish):")
+    lines = []
+    
+    while True:
+        line = input()
+        if line.strip().upper() == "DONE":
+            break
+        lines.append(line)
+    
+    # Map, Shuffle, Reduce Phases
+    mapped = map_step(lines)
+    shuffled = shuffle_step(mapped)
+    reduced = reduce_step(shuffled)
+    
+    # Final Output
+    print("\n=== Word Count Result ===")
+    for word, count in sorted(reduced.items()):
+        print(f"{word}: {count}")
+
+
+2.Bloom Filter: 
+
+import hashlib
+
+class BloomFilter:
+    def __init__(self, size=20):
+        self.size = size
+        self.bits = [0] * size
+
+    # Two hash functions (convert number → string for hashing)
+    def h1(self, num):
+        return int(hashlib.md5(str(num).encode()).hexdigest(), 16) % self.size
+
+    def h2(self, num):
+        return int(hashlib.sha1(str(num).encode()).hexdigest(), 16) % self.size
+
+    # Insert number into Bloom Filter
+    def insert(self, num):
+        i1, i2 = self.h1(num), self.h2(num)
+        self.bits[i1] = self.bits[i2] = 1
+        print(f"Inserted {num} → bits {i1}, {i2}")
+
+    # Check if number may exist
+    def lookup(self, num):
+        i1, i2 = self.h1(num), self.h2(num)
+        if self.bits[i1] and self.bits[i2]:
+            print(f"{num} → may be present")
+        else:
+            print(f"{num} → not present")
+
+    def show(self):
+        print("Bit Array:", self.bits)
+
+# ---------------- DRIVER CODE ----------------
+bf = BloomFilter(20)
+
+# Insert numeric data
+bf.insert(10)
+bf.insert(25)
+bf.insert(35)
+
+bf.show()
+
+print("\nLookup:")
+for n in [10, 25, 35, 50, 75]:
+    bf.lookup(n)
+
+
+3.Flajolet Martin : 
+
+import hashlib
+
+# Function to count trailing zeros in binary
+def count_trailing_zeros(num):
+    return len(bin(num)) - len(bin(num).rstrip('0'))
+
+# Simple hash function for numeric input
+def hash_value(x):
+    h = hashlib.sha1(str(x).encode()).hexdigest()
+    return int(h[:8], 16)   # Take first 8 hex digits
+
+# Flajolet-Martin algorithm
+def flajolet_martin(stream):
+    R = 0
+    for num in stream:
+        hv = hash_value(num)
+        r = count_trailing_zeros(hv)
+        R = max(R, r)
+    return 2 ** R   # Estimated distinct elements
+
+# ---------------------- DRIVER CODE ----------------------
+data_stream = [10, 20, 10, 30, 40, 20, 50, 60, 70, 30, 80]
+
+print("Data Stream:", data_stream)
+print("True Unique Elements:", len(set(data_stream)))
+print("Estimated Unique Elements (Flajolet-Martin):", flajolet_martin(data_stream))
+
+
+R Programming:
+
+🎯 R PRACTICAL EXAM COMPLETE GUIDE
+
+🧩 1️⃣ BASIC QUESTIONS (Must Know)
+🧠 Q1. Print numbers from 10 to 50
+a <- 10:50        # Create sequence 10 to 50
+print(a)          # Print numbers
+
+
+✅ Output: 10 11 12 ... 50
+🧠 Q2. Find mean of numbers from 21 to 50
+mean(21:50)         # Find average (sum/length)
+
+
+✅ Output: 35.5
+🧠 Q3. Add numbers from 51 to 90
+sum(51:90)        # Add all numbers
+
+
+✅ Output: 2820
+🧠 Q4. Find mean, max, min, and sd from a vector
+abhi <- c(2, 3, 4, 8, 9, 11, 34)
+mean(abhi)        # Average value
+max(abhi)         # Largest number
+min(abhi)         # Smallest number
+sd(abhi)          # Standard deviation
+
+
+✅ Output (approx):
+mean = 10.14 | max = 34 | min = 2 | sd = 11.03
+🧠 Q5. Create a simple Data Frame
+ash <- data.frame(Name=c("Ashaaf","Abhinav","Hardik"),
+                  Class=c("Btech03","Btech04","Btech09"),
+                  RollNo=c(1,2,3))
+print(ash)        # Display table
+
+
+✅ Output: 3 rows (Name, Class, RollNo)
+🧩 2️⃣ PLOTTING SECTION
+📊 BAR PLOT (Base R)
+🧠 Q: Draw a bar plot for marks in 5 subjects.
+subjects <- c("Math", "Science", "English", "History", "Computer")
+marks <- c(85, 90, 78, 88, 95)
+
+barplot(marks,
+        names.arg = subjects,   # Labels under bars
+        col = "skyblue",        # Bar color
+        main = "Marks in 5 Subjects", # Title
+        xlab = "Subjects",      # X-axis label
+        ylab = "Marks",         # Y-axis label
+        border = "black")       # Border color
+✅ Output: Blue bars for 5 subjects with labels and title.
+💡 Key points:
+Use names.arg, not names.args ❌
+barplot() shows heights = numeric values
+col gives color; main gives title
+📊 BAR PLOT using ggplot2
+🧠 Q: Draw a bar chart for categories and their values using ggplot2.
+Step 1: Install and Load ggplot2
+install.packages("ggplot2")  # (only once)
+library(ggplot2)            # activate
+
+
+Step 2: Create data and plot
+data <- data.frame(categories = c("A", "B", "C"),
+                   values = c(5, 10, 15))
+
+ggplot(data, aes(x = categories, y = values)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  ggtitle("Bar Plot using ggplot2") +
+  xlab("Categories") +
+  ylab("Values")
+✅ Output: Blue bars labeled A, B, C with heights 5,10,15
+
+⚠️ Common mistake:
+If you forget stat="identity", you’ll get:
+Error: stat_count() must only have an x or y aesthetic.
+→ because ggplot tries to count values by default.
+📈 LINE PLOT (Base R)
+🧠 Q: Draw a line plot for given data.
+x <- c(1, 2, 3, 4, 5)
+y <- c(7, 8, 9, 10, 44)
+
+plot(x, y, type = "l", col = "blue", main = "Line Plot")
+✅ Output: Blue line connecting (1,7) → (5,44)
+💡 Note:
+type="l" → line plot
+type="p" → scatter (points)
+type="b" → both (points + line)
+📈 LINE PLOT using ggplot2
+🧠 Q: Draw a line plot using ggplot2.
+df <- data.frame(x = 1:10, y = (1:10)^2)
+
+ggplot(df, aes(x = x, y = y)) +
+  geom_line(color = "red", linewidth = 1.2) +
+  ggtitle("Line Plot Example") +
+  xlab("X-axis Values") +
+  ylab("Y-axis Values")
+✅ Output: Red line showing y = x²
+⚠️ Important Update:
+Use linewidth (not size) for line thickness (ggplot2 v3.4+).
+
+⚪ SCATTER PLOT (Base R)
+🧠 Q: Draw a scatter plot of x and y.
+x <- c(1, 2, 3, 4, 5)
+y <- c(7, 8, 9, 10, 44)
+plot(x, y, main = "Scatter Plot", col = "red", pch = 19)
+✅ Output: Red dots showing (x, y) points
+
+💡 Note:
+pch = point shape → (19 = solid circle)
+
+⚪ SCATTER PLOT using ggplot2
+🧠 Q: Draw scatter plot using ggplot2.
+data <- data.frame(x = c(1, 2, 3, 4, 5),
+                   y = c(10, 20, 30, 40, 50))
+
+ggplot(data, aes(x = x, y = y)) +
+  geom_point(color = "red", size = 3) +
+  ggtitle("Scatter Plot using ggplot2") +
+  xlab("X-axis Values") +
+  ylab("Y-axis Values")
+✅ Output: Red dots plotted for given (x, y) pairs.
+
+📊 HISTOGRAM (Base R)
+🧠 Q: Create histogram for given data.
+data <- c(2,3,3,5,5,5,7,8,8,9,10,10,11,12)
+hist(data, col = "lightblue",
+     main = "Histogram Example",
+     xlab = "Values", ylab = "Frequency")
+✅ Output: Light blue bars showing frequency of numbers.
+💡 Note:
+Histogram shows distribution of numeric data — not categories.
+
+📊 HISTOGRAM using ggplot2
+🧠 Q: Create histogram using ggplot2.
+ggplot(data.frame(values = rnorm(100)), aes(x = values)) +
+  geom_histogram(binwidth = 0.5, fill = "skyblue", color = "black") +
+  ggtitle("Histogram Example")
+
+
+✅ Output: Bell-shaped histogram of 100 random numbers.
+💡 Note:
+rnorm(100) → generates 100 random values
+binwidth → width of each bar (0.5 = narrow, more bars)
+
+📦 BOX PLOT (Base R)
+🧠 Q: Create a box plot for scores.
+scores <- c(45, 55, 60, 65, 70, 75, 80, 85, 90)
+boxplot(scores, main = "Box Plot Example", col = "lightgreen")
+
+
+✅ Output: Green box with median line at 70, min=45, max=90.
+💡 Note:
+Box plot shows median, quartiles, range, and outliers.
+
+📦 BOX PLOT using ggplot2
+🧠 Q: Draw a box plot using ggplot2.
+data <- data.frame(category = "Scores",
+                   values = c(45, 55, 60, 65, 70, 75, 80, 85, 90))
+
+ggplot(data, aes(x = category, y = values)) +
+  geom_boxplot(fill = "lightgreen") +
+  ggtitle("Box Plot using ggplot2")
+✅ Output: Single green box showing score distribution.
+
+
+
+Java Code:
+
+1.MR:
+
+# Word count problem
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class WordCount {
+    public static void main(String[] args) {
+        String text = "I love Java and I love coding in Java";
+
+        // Step 1: Convert text to lowercase (to avoid case mismatch)
+        text = text.toLowerCase();
+
+        // Step 2: Split sentence into words
+        String[] words = text.split("\\s+"); // split by spaces
+        
+        // [i,love,java,and,i,love,coding,in,java]
+
+        // Step 3: Create a HashMap to store word counts
+        Map<String, Integer> wordCount = new HashMap<>();
+        
+      
+
+        // Step 4: Count occurrences
+        for (String word : words) {
+            // remove punctuation like commas or dots
+	          // word = word.replaceAll("[^a-zA-Z]", "");
+
+            //if (word.isEmpty()) continue;
+
+            wordCount.put(word, wordCount.getOrDefault(word, 0) + 1);
+        }
+
+        // Step 5: Print the result
+        for (Map.Entry<String, Integer> entry : wordCount.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
+        
+        
+        
+          //{i:2,love:2,java:2,and:1,coding:1,in:1}
+    }
+}
+
+2.BM:
+
+import java.util.BitSet;
+
+public class SimpleBloomFilter {
+    private final BitSet bitSet;
+    private final int size;
+
+    public SimpleBloomFilter(int size) {
+        this.size = size;
+        this.bitSet = new BitSet(size);
+    }
+
+    // simple hash functions using basic math
+    private int hash1(int num) {
+        return Math.abs(num % size);
+    }
+
+    private int hash2(int num) {
+        return Math.abs((num * 7 + 13) % size);
+    }
+
+    private int hash3(int num) {
+        return Math.abs((num * 17 + 29) % size);
+    }
+
+    // add number to Bloom Filter
+    public void add(int num) {
+        bitSet.set(hash1(num));
+        bitSet.set(hash2(num));
+        bitSet.set(hash3(num));
+    }
+
+    // check if number might exist
+    public boolean mightContain(int num) {
+        return bitSet.get(hash1(num)) &&
+               bitSet.get(hash2(num)) &&
+               bitSet.get(hash3(num));
+    }
+
+    public static void main(String[] args) {
+        SimpleBloomFilter bloom = new SimpleBloomFilter(100);
+
+        bloom.add(10);
+        bloom.add(25);
+        bloom.add(55);
+
+        System.out.println(bloom.mightContain(10));  // true might present
+        System.out.println(bloom.mightContain(25));  // true might present
+        
+        // false not present with 100% accuracy
+        System.out.println(bloom.mightContain(99));  
+    }
+}
+
+
+3.FM:
+
+import java.util.Arrays;
+
+public class Main {
+    
+
+    public static int hash(int value){
+        return (6*value +1)%5;
+    }
+
+
+
+
+    public static int numberOfTrailingZeros(int value){
+        int numberOfZeros = 0;
+        if(value == 0) return 0;
+
+        while((value&1) == 0){
+            numberOfZeros++;
+            value = value>>1;
+        }
+
+        return numberOfZeros;
+
+    }
+
+    
+
+    public static void main ( String[] args ){
+
+
+        int[] stream = {1,2,3,1,2,3,4,3};
+
+
+        int maxZeros = Arrays.stream (stream).map (Main::hash).map (Main::numberOfTrailingZeros).reduce (Integer::max).getAsInt ();
+
+        System.out.println (Math.pow (2.0,maxZeros));
+
+
+
+    }
+}
+
+
+
+
+
+
+
+
